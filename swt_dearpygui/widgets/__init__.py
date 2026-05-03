@@ -4,3 +4,4 @@ from .search_bar import SearchBar
 from .modal_dialog import ModalDialog
 from .toolbar import Toolbar
 from .status_bar import StatusBar
+from .sidebar import Sidebar
