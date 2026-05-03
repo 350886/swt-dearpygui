@@ -65,7 +65,7 @@ class DataTable:
                     bg_token = "row_even" if (start + row_idx) % 2 == 0 else "row_odd"
                     bg = ThemeManager.get_token(bg_token)
                     r, g, b = self._hex_to_rgb(bg)
-                    dpg.add_text(str(val), parent=self._tag, color=(r, g, b, 1.0))
+                    dpg.add_text(str(val), parent=row_tag, color=(r, g, b, 1.0))
 
     def _hex_to_rgb(self, hex_color: str):
         h = hex_color.lstrip("#")
