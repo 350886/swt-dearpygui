@@ -10,7 +10,7 @@ import threading
 class DBCompat:
     def __init__(self, config: dict):
         self._config = {
-            'host': config.get('db_host', '192.168.0.120'),
+            'host': config.get('db_host', '127.0.0.1'),
             'port': int(config.get('db_port', 3306)),
             'user': config.get('db_user', 'mysql'),
             'password': config.get('db_password', 'mysql'),
