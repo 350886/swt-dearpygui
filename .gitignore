@@ -1,0 +1,7 @@
+# 本地配置文件 — 包含真实数据库密码，禁止提交
+swt_config.json
+
+# Python
+__pycache__/
+*.pyc
+*.pyo

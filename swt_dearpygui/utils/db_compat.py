@@ -55,7 +55,10 @@ class DBCompat:
             conn = pool.connection()
         cursor = conn.cursor()
         try:
-            rows = cursor.execute(sql, params or ())
+            if params:
+                rows = cursor.execute(sql, params)
+            else:
+                rows = cursor.execute(sql)
             conn.commit()
             return rows
         finally:
