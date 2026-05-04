@@ -149,13 +149,9 @@ class SWTApp:
                     self._status_bar.build(parent="content_area")
 
     def _setup_font(self):
-        """加载中文字体"""
         import os as _os
-        font_paths = [
-            r"C:\Windows\Fonts\msyh.ttc",
-            r"C:\Windows\Fonts\simsun.ttc",
-            r"C:\Windows\Fonts\simhei.ttf",
-        ]
+        bundled = _os.path.join(_os.path.dirname(__file__), "simhei.ttf")
+        font_paths = [bundled, r"C:\Windows\Fonts\simhei.ttf"]
         font_path = None
         for fp in font_paths:
             if _os.path.exists(fp):
@@ -164,9 +160,9 @@ class SWTApp:
         if font_path is None:
             return
         with dpg.font_registry():
-            with dpg.font(font_path, size=16) as default_font:
+            with dpg.font(font_path, size=15) as font_tag:
                 pass
-            dpg.bind_font(default_font)
+        dpg.bind_font(font_tag)
 
     def run(self):
         dpg.create_context()
@@ -174,7 +170,7 @@ class SWTApp:
 
         width = int(self._config.get("window_width", 1200))
         height = int(self._config.get("window_height", 800))
-        dpg.create_viewport(title="SWT 货运管理系统", width=width, height=height)
+        dpg.create_viewport(title="SWT", width=width, height=height)
 
         self._build_ui()
         dpg.set_primary_window("main_window", True)
@@ -182,9 +178,27 @@ class SWTApp:
         dpg.setup_dearpygui()
         dpg.show_viewport()
 
+        # 通过 Win32 API 设置中文标题，避免 dearpygui 编码问题导致乱码
+        self._set_window_title("SWT 货运管理系统")
+
         if self._pages:
             first_page = list(self._pages.keys())[0]
-            self.navigate_to(first_page)
+            try:
+                self.navigate_to(first_page)
+            except Exception as e:
+                self.show_error(f"数据库连接失败: {e}")
+                self.navigate_to("settings")
 
         dpg.start_dearpygui()
         dpg.destroy_context()
+
+    @staticmethod
+    def _set_window_title(title: str):
+        """通过 Win32 SetWindowTextW 设置窗口标题，正确处理 Unicode"""
+        import ctypes
+        try:
+            hwnd = ctypes.windll.user32.FindWindowW(None, "SWT")
+            if hwnd:
+                ctypes.windll.user32.SetWindowTextW(hwnd, title)
+        except Exception:
+            pass
