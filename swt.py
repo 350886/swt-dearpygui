@@ -114,6 +114,174 @@ class AcrylicRoot(tk.Tk):
                 pass
 
 
+class DeleteConfirmDialog(tk.Toplevel):
+    """删除确认对话框 —— 必须输入正确的發票號才能删除"""
+
+    def __init__(self, parent, invoice_code, con_code):
+        super().__init__(parent)
+        self.title("确认删除")
+        self.result = False
+        self.invoice_code = invoice_code
+        self.geometry("430x240")
+        self.resizable(False, False)
+        self.transient(parent)
+        self.grab_set()
+
+        self.update_idletasks()
+        w = self.winfo_width()
+        h = self.winfo_height()
+        sw = self.winfo_screenwidth()
+        sh = self.winfo_screenheight()
+        x = (sw - w) // 2
+        y = (sh - h) // 2
+        self.geometry("+{}+{}".format(x, y))
+
+        self._build_ui(invoice_code, con_code)
+        self.protocol("WM_DELETE_WINDOW", self._on_cancel)
+
+    def _build_ui(self, invoice_code, con_code):
+        frame = tk.Frame(self, bg='#f0f2f5')
+        frame.pack(fill="both", expand=True, padx=15, pady=15)
+
+        tk.Label(
+            frame,
+            text="⚠ 此操作不可撤销！请输入發票號确认删除",
+            font=("Microsoft YaHei", 10, "bold"),
+            bg='#f0f2f5',
+            fg="red",
+        ).pack(anchor="w", pady=(0, 10))
+
+        info_frame = tk.Frame(frame, bg='#f0f2f5')
+        info_frame.pack(fill="x", pady=(0, 10))
+        tk.Label(info_frame, text="發票號: " + str(invoice_code),
+                 bg='#f0f2f5', fg='#262626').pack(anchor="w")
+        tk.Label(info_frame, text="櫃    號: " + str(con_code),
+                 bg='#f0f2f5', fg='#262626').pack(anchor="w")
+
+        tk.Label(frame, text="请输入發票號（输入匹配后按钮启用）:",
+                 bg='#f0f2f5', fg='#595959').pack(anchor="w")
+
+        input_frame = tk.Frame(frame, bg='#f0f2f5')
+        input_frame.pack(fill="x", pady=(5, 15))
+
+        self.input_var = tk.StringVar()
+        self.input_var.trace_add("write", self._on_input_change)
+        self.entry = tk.Entry(input_frame, textvariable=self.input_var, width=35,
+                              font=('Microsoft YaHei UI', 10))
+        self.entry.pack(side="left", fill="x", expand=True)
+        self.entry.focus_set()
+
+        btn_frame = tk.Frame(frame, bg='#f0f2f5')
+        btn_frame.pack(fill="x")
+
+        self.delete_btn = tk.Button(
+            btn_frame, text="确认删除", bg='#ff4d4f', fg='#ffffff',
+            font=('Microsoft YaHei UI', 10), bd=0, padx=16, pady=5,
+            cursor='hand2', state='disabled', command=self._on_confirm
+        )
+        self.delete_btn.pack(side="left", padx=(0, 10))
+
+        tk.Button(btn_frame, text="取消", bg='#f5f5f5', fg='#595959',
+                  font=('Microsoft YaHei UI', 10), bd=0, padx=16, pady=5,
+                  cursor='hand2', command=self._on_cancel).pack(side="left")
+
+    def _on_input_change(self, *args):
+        if self.input_var.get().strip() == self.invoice_code:
+            self.delete_btn.config(state="normal")
+        else:
+            self.delete_btn.config(state="disabled")
+
+    def _on_confirm(self):
+        self.result = True
+        self.destroy()
+
+    def _on_cancel(self):
+        self.result = False
+        self.destroy()
+
+
+class DriverDeleteConfirmDialog(tk.Toplevel):
+    """司机删除确认对话框 —— 必须输入正确的司機編號才能删除"""
+
+    def __init__(self, parent, driver_code):
+        super().__init__(parent)
+        self.title("确认删除司机")
+        self.result = False
+        self.driver_code = driver_code
+        self.geometry("430x230")
+        self.resizable(False, False)
+        self.transient(parent)
+        self.grab_set()
+
+        self.update_idletasks()
+        w = self.winfo_width()
+        h = self.winfo_height()
+        sw = self.winfo_screenwidth()
+        sh = self.winfo_screenheight()
+        x = (sw - w) // 2
+        y = (sh - h) // 2
+        self.geometry("+{}+{}".format(x, y))
+
+        self._build_ui(driver_code)
+        self.protocol("WM_DELETE_WINDOW", self._on_cancel)
+
+    def _build_ui(self, driver_code):
+        frame = tk.Frame(self, bg='#f0f2f5')
+        frame.pack(fill="both", expand=True, padx=15, pady=15)
+
+        tk.Label(
+            frame,
+            text="⚠ 此操作将删除该司机在 DRIVER_MASTER / VEHICLE_MASTER / DRIVER_CP 中的所有记录！",
+            font=("Microsoft YaHei", 10, "bold"),
+            bg='#f0f2f5', fg="red", wraplength=380, justify="left"
+        ).pack(anchor="w", pady=(0, 10))
+
+        tk.Label(frame, text="司機編號: " + str(driver_code),
+                 bg='#f0f2f5', fg='#262626', font=("Microsoft YaHei UI", 11)
+                 ).pack(anchor="w", pady=(0, 10))
+
+        tk.Label(frame, text="请输入司機編號确认删除（输入匹配后按钮启用）:",
+                 bg='#f0f2f5', fg='#595959').pack(anchor="w")
+
+        input_frame = tk.Frame(frame, bg='#f0f2f5')
+        input_frame.pack(fill="x", pady=(5, 15))
+
+        self.input_var = tk.StringVar()
+        self.input_var.trace_add("write", self._on_input_change)
+        self.entry = tk.Entry(input_frame, textvariable=self.input_var, width=35,
+                              font=('Microsoft YaHei UI', 10))
+        self.entry.pack(side="left", fill="x", expand=True)
+        self.entry.focus_set()
+
+        btn_frame = tk.Frame(frame, bg='#f0f2f5')
+        btn_frame.pack(fill="x")
+
+        self.delete_btn = tk.Button(
+            btn_frame, text="确认删除", bg='#ff4d4f', fg='#ffffff',
+            font=('Microsoft YaHei UI', 10), bd=0, padx=16, pady=5,
+            cursor='hand2', state='disabled', command=self._on_confirm
+        )
+        self.delete_btn.pack(side="left", padx=(0, 10))
+
+        tk.Button(btn_frame, text="取消", bg='#f5f5f5', fg='#595959',
+                  font=('Microsoft YaHei UI', 10), bd=0, padx=16, pady=5,
+                  cursor='hand2', command=self._on_cancel).pack(side="left")
+
+    def _on_input_change(self, *args):
+        if self.input_var.get().strip() == self.driver_code:
+            self.delete_btn.config(state="normal")
+        else:
+            self.delete_btn.config(state="disabled")
+
+    def _on_confirm(self):
+        self.result = True
+        self.destroy()
+
+    def _on_cancel(self):
+        self.result = False
+        self.destroy()
+
+
 class SWTManagementSystem:
     """SWT 货运管理系统主类"""
 
@@ -558,6 +726,8 @@ class SWTManagementSystem:
             ('company_stats', '📊 公司统计'),
             ('biz_stats', '📈 业务统计'),
             ('custom_table', '📋 自定义表'),
+            ('delete_data', '🗑️ 删除数据'),
+            ('add_driver', '➕ 增加司机'),
         ]
 
         for menu_id, menu_text in menus:
@@ -729,6 +899,22 @@ class SWTManagementSystem:
 
         # 高亮当前按钮
         self.menu_buttons[menu_id].config(bg='#1890ff', fg='#ffffff')
+
+        # 删除数据 / 增加司机 需要密码验证
+        if menu_id in ('delete_data', 'add_driver'):
+            from tkinter import simpledialog
+            menu_name = "删除数据" if menu_id == 'delete_data' else "增加司机"
+            pwd = simpledialog.askstring(
+                "密码验证", "请输入访问密码：",
+                parent=self.root, show="*"
+            )
+            if pwd != "23689666":
+                self.menu_buttons[menu_id].config(bg='#0f1419', fg='#a0a0a0')
+                if self.current_menu and self.current_menu in self.menu_buttons:
+                    self.menu_buttons[self.current_menu].config(bg='#1890ff', fg='#ffffff')
+                messagebox.showwarning("密码错误", "密码不正确，无法进入" + menu_name)
+                return
+
         self.current_menu = menu_id
 
         # 清空主内容区
@@ -754,6 +940,12 @@ class SWTManagementSystem:
         elif menu_id == 'custom_table':
             self.show_custom_table()
             self.breadcrumb_label.config(text="SWT 货运管理系统  ›  自定义表")
+        elif menu_id == 'delete_data':
+            self.show_delete_data()
+            self.breadcrumb_label.config(text="SWT 货运管理系统  ›  删除数据")
+        elif menu_id == 'add_driver':
+            self.show_add_driver()
+            self.breadcrumb_label.config(text="SWT 货运管理系统  ›  增加司机")
         elif menu_id == 'settings':
             self.show_settings()
             self.breadcrumb_label.config(text="SWT 货运管理系统  ›  设置")
@@ -3022,32 +3214,45 @@ class SWTManagementSystem:
                         else:
                             cell.alignment = align_vcenter
 
-                # 運雜費合計列公式
+                # 運雜費合計列（计算实际值）
                 if has_total_in:
                     total_col = len(header)
-                    freight_col_letter = get_column_letter(fixed_cols_in.index('運費') + 1)
-                    last_misc_col_letter = get_column_letter(total_col - 1)
+                    freight_cols = ['運費'] + active_misc_cols
+                    col_totals = {c: 0.0 for c in freight_cols}
+                    grand_total = 0.0
                     for row_idx in range(2, 2 + data_row_count):
+                        row = rows[row_idx - 2]
+                        row_total = 0.0
+                        for ac in freight_cols:
+                            try:
+                                v = float(row.get(ac, 0) or 0)
+                                row_total += v
+                                col_totals[ac] += v
+                            except (ValueError, TypeError):
+                                pass
+                        grand_total += row_total
                         cell = ws.cell(row=row_idx, column=total_col)
-                        cell.value         = f'=SUM({freight_col_letter}{row_idx}:{last_misc_col_letter}{row_idx})'
+                        cell.value         = row_total
                         cell.number_format = num_fmt
                         cell.font          = font_base
                         cell.border        = thin_border
                         cell.alignment     = align_right
 
-                # 合計行（从運費列开始求和）
+                # 合計行
                 summary_row = 2 + data_row_count
                 ws.row_dimensions[summary_row].height = ROW_HEIGHT
                 cell_a = ws.cell(row=summary_row, column=1, value='合計')
                 cell_a.font      = font_total
                 cell_a.border    = thin_border
                 cell_a.alignment = align_vcenter
-                # 找到運費列的位置，从该列开始才放SUM公式
                 freight_col_idx = fixed_cols_in.index('運費') + 1 if '運費' in fixed_cols_in else 2
                 for col_idx in range(freight_col_idx, len(header) + 1):
-                    col_letter = get_column_letter(col_idx)
+                    col_name = header[col_idx - 1]
                     cell = ws.cell(row=summary_row, column=col_idx)
-                    cell.value         = f'=SUM({col_letter}2:{col_letter}{summary_row - 1})'
+                    if col_name == '運雜費合計':
+                        cell.value         = grand_total
+                    else:
+                        cell.value         = col_totals.get(col_name, 0.0)
                     cell.font          = font_total
                     cell.border        = thin_border
                     cell.number_format = num_fmt
@@ -4321,10 +4526,23 @@ class SWTManagementSystem:
 
         # 第8行起：数据行
         DATA_START = 8
+        num_cols = amount_cols + ['運費']
+        col_totals = {ac: 0.0 for ac in num_cols}
+        grand_total = 0.0
         for row_offset, row_data in enumerate(rows):
             r = DATA_START + row_offset
             ws.row_dimensions[r].height = 30
             row_dict = row_data if isinstance(row_data, dict) else dict(zip(cols, row_data))
+
+            row_total = 0.0
+            for ac in num_cols:
+                try:
+                    v = float(row_dict.get(ac, 0) or 0)
+                    row_total += v
+                    col_totals[ac] += v
+                except (ValueError, TypeError):
+                    pass
+            grand_total += row_total
 
             for col_idx, col_name in enumerate(all_cols, start=1):
                 c = ws.cell(row=r, column=col_idx)
@@ -4332,9 +4550,7 @@ class SWTManagementSystem:
                 c.border = thin_border_func()
 
                 if col_name == TOTAL_COL:
-                    amount_start_col = get_column_letter(FIXED_COLS.index('運費') + 1)
-                    amount_end_col = get_column_letter(len(all_cols) - 1)
-                    c.value = f'=SUM({amount_start_col}{r}:{amount_end_col}{r})'
+                    c.value = row_total
                     c.alignment = align_func('right', 'center')
                     c.number_format = '#,##0.00'
                 elif col_name == '運費':
@@ -4377,9 +4593,11 @@ class SWTManagementSystem:
             c.border = thin_border_func()
             c.alignment = align_func('right', 'center')
             col_name = all_cols[col_idx - 1]
-            if col_name in [TOTAL_COL, '運費'] + amount_cols:
-                col_letter = get_column_letter(col_idx)
-                c.value = f'=SUM({col_letter}{DATA_START}:{col_letter}{total_row-1})'
+            if col_name == TOTAL_COL:
+                c.value = grand_total
+                c.number_format = '#,##0.00'
+            elif col_name in amount_cols or col_name == '運費':
+                c.value = col_totals.get(col_name, 0.0)
                 c.number_format = '#,##0.00'
 
         # 自适应列宽（中文宽度×2 + 英文宽度×1，含合计行）
@@ -5418,8 +5636,9 @@ class SWTManagementSystem:
                     c.font = font_normal
                     c.alignment = align_right
 
+                    sub_total = sum(a if a else 0 for a in period_amounts)
                     c = ws[f'E{subtotal_row}']
-                    c.value = f'=SUM(E12:E{empty_start - 1})'
+                    c.value = sub_total
                     c.font = font_total
                     c.alignment = align_right
                     c.number_format = num_fmt
@@ -5841,6 +6060,9 @@ class SWTManagementSystem:
                     if len(rows) > 0:
                         self.append_export_result(f"  调试: 第一行数据 keys={row_dict.keys() if 'row_dict' in locals() else 'N/A'}")
 
+                num_cols = amount_cols + ['運費']
+                col_totals = {ac: 0.0 for ac in num_cols}
+                grand_total = 0.0
                 for row_offset, row_data in enumerate(rows):
                     r = DATA_START + row_offset
                     ws.row_dimensions[r].height = 30
@@ -5852,16 +6074,23 @@ class SWTManagementSystem:
                     else:
                         row_dict = dict(zip(cols, row_data))
 
+                    row_total = 0.0
+                    for ac in num_cols:
+                        try:
+                            v = float(row_dict.get(ac, 0) or 0)
+                            row_total += v
+                            col_totals[ac] += v
+                        except (ValueError, TypeError):
+                            pass
+                    grand_total += row_total
+
                     for col_idx, col_name in enumerate(all_cols, start=1):
                         c = ws.cell(row=r, column=col_idx)
                         c.font = font_func(11)
                         c.border = thin_border_func()
 
                         if col_name == TOTAL_COL:
-                            # 合计列使用公式 - 从運費列开始加
-                            amount_start_col = get_column_letter(FIXED_COLS.index('運費') + 1)  # 運費是第12列
-                            amount_end_col = get_column_letter(len(all_cols) - 1)  # 到運雜費合計前一列
-                            c.value = f'=SUM({amount_start_col}{r}:{amount_end_col}{r})'
+                            c.value = row_total
                             c.alignment = align_func('right', 'center')
                             c.number_format = '#,##0.00'
                         elif col_name in amount_cols:
@@ -5915,16 +6144,11 @@ class SWTManagementSystem:
                     col_name = all_cols[col_idx - 1]
 
                     if col_name == TOTAL_COL:
-                        col_letter = get_column_letter(col_idx)
-                        c.value = f'=SUM({col_letter}{DATA_START}:{col_letter}{total_row-1})'
+                        c.value = grand_total
                         c.number_format = '#,##0.00'
-                    elif col_name == '運費':
-                        col_letter = get_column_letter(col_idx)
-                        c.value = f'=SUM({col_letter}{DATA_START}:{col_letter}{total_row-1})'
+                    elif col_name == '運費' or col_name in amount_cols:
+                        c.value = col_totals.get(col_name, 0.0)
                         c.number_format = '#,##0.00'
-                    elif col_name in amount_cols:
-                        col_letter = get_column_letter(col_idx)
-                        c.value = f'=SUM({col_letter}{DATA_START}:{col_letter}{total_row-1})'
                         c.number_format = '#,##0.00'
 
                 # 动态调整列宽（真正自适应）
@@ -7253,6 +7477,579 @@ ORDER BY (`客户编号` = '') DESC, `客户编号` ASC
         self.biz_result_text.see(tk.END)
         self.biz_result_text.configure(state='disabled')
         self.root.update()
+
+    # ── 删除数据 ──────────────────────────────────────
+
+    def show_delete_data(self):
+        """显示删除数据页面 —— 搜索并删除 CON_DETAIL 记录"""
+        page = tk.Frame(self.main_content, bg='#f0f2f5')
+        page.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
+
+        # ── 页面标题 ──────────────────────────────────
+        title_frame = tk.Frame(page, bg='#f0f2f5')
+        title_frame.pack(fill=tk.X, pady=(0, 20))
+
+        tk.Label(
+            title_frame,
+            text="删除数据",
+            font=('Microsoft YaHei UI', 20, 'bold'),
+            bg='#f0f2f5',
+            fg='#262626'
+        ).pack(side=tk.LEFT)
+
+        # ── 搜索卡片 ──────────────────────────────────
+        search_card = tk.Frame(page, bg='#ffffff', bd=1, relief='solid')
+        search_card.pack(fill=tk.X, pady=(0, 15), ipady=10)
+
+        card_header = tk.Frame(search_card, bg='#ffffff', padx=20, pady=15)
+        card_header.pack(fill=tk.X)
+
+        tk.Label(
+            card_header,
+            text="🔎 搜索 CON_DETAIL 记录",
+            font=('Microsoft YaHei UI', 14, 'bold'),
+            bg='#ffffff',
+            fg='#262626'
+        ).pack(side=tk.LEFT)
+
+        search_control = tk.Frame(search_card, bg='#ffffff', padx=20)
+        search_control.pack(fill=tk.X)
+
+        tk.Label(search_control, text="發票號(INVOICECODE):",
+                 font=('Microsoft YaHei UI', 11), bg='#ffffff', fg='#595959'
+                 ).pack(side=tk.LEFT, padx=(0, 8))
+
+        self._delete_search_var = tk.StringVar()
+        self._delete_search_entry = ttk.Entry(
+            search_control, textvariable=self._delete_search_var,
+            width=25, font=('Microsoft YaHei UI', 11)
+        )
+        self._delete_search_entry.pack(side=tk.LEFT, padx=(0, 10))
+        self._delete_search_entry.bind("<Return>", lambda e: self._delete_do_search())
+
+        tk.Button(search_control, text="搜索", command=self._delete_do_search,
+                  font=('Microsoft YaHei UI', 10), bg='#1890ff', fg='#ffffff',
+                  bd=0, padx=12, pady=4, cursor='hand2'
+                  ).pack(side=tk.LEFT, padx=3)
+        tk.Button(search_control, text="清空", command=self._delete_clear,
+                  font=('Microsoft YaHei UI', 10), bg='#f5f5f5', fg='#595959',
+                  bd=0, padx=12, pady=4, cursor='hand2'
+                  ).pack(side=tk.LEFT, padx=3)
+        tk.Button(search_control, text="加载全部", command=self._delete_load_all,
+                  font=('Microsoft YaHei UI', 10), bg='#f5f5f5', fg='#595959',
+                  bd=0, padx=12, pady=4, cursor='hand2'
+                  ).pack(side=tk.LEFT, padx=3)
+
+        hint_text = "字段: INVOICECODE(發票號) | NN | CONCODE(櫃號) | DRIVER(司機編號) | SIZE(櫃尺碼) | DRIVERCODE(香港車牌) | TAKENO(提貨號碼) | DRIVERCOMM(司機運費)"
+        tk.Label(search_card, text=hint_text, font=('Microsoft YaHei UI', 9),
+                 bg='#ffffff', fg='#8c8c8c').pack(anchor="w", padx=20, pady=(0, 10))
+
+        # ── 结果表格卡片 ──────────────────────────────────
+        table_card = tk.Frame(page, bg='#ffffff', bd=1, relief='solid')
+        table_card.pack(fill=tk.BOTH, expand=True, ipady=10)
+
+        table_header = tk.Frame(table_card, bg='#ffffff', padx=20, pady=15)
+        table_header.pack(fill=tk.X)
+
+        tk.Label(
+            table_header,
+            text="📋 查询结果",
+            font=('Microsoft YaHei UI', 14, 'bold'),
+            bg='#ffffff',
+            fg='#262626'
+        ).pack(side=tk.LEFT)
+
+        self._delete_count_label = tk.Label(
+            table_header,
+            text="共 0 条记录",
+            font=('Microsoft YaHei UI', 11),
+            bg='#ffffff',
+            fg='#8c8c8c'
+        )
+        self._delete_count_label.pack(side=tk.RIGHT)
+
+        # Treeview
+        tree_container = tk.Frame(table_card, bg='#ffffff')
+        tree_container.pack(fill=tk.BOTH, expand=True, padx=20, pady=(0, 10))
+
+        columns = ("INVOICECODE", "NN", "CONCODE", "DRIVER", "SIZE", "DRIVERCODE", "TAKENO", "DRIVERCOMM")
+        col_labels = {
+            "INVOICECODE": "發票號",
+            "NN": "NN",
+            "CONCODE": "櫃號",
+            "DRIVER": "司機編號",
+            "SIZE": "櫃尺碼",
+            "DRIVERCODE": "香港車牌",
+            "TAKENO": "提貨號碼",
+            "DRIVERCOMM": "司機運費",
+        }
+        col_widths = {
+            "INVOICECODE": 130, "NN": 80, "CONCODE": 110, "DRIVER": 90, "SIZE": 80,
+            "DRIVERCODE": 100, "TAKENO": 110, "DRIVERCOMM": 100,
+        }
+
+        self._delete_tree = ttk.Treeview(
+            tree_container, columns=columns, show="headings",
+            selectmode="browse", height=15
+        )
+        for col in columns:
+            label = col_labels.get(col, col)
+            self._delete_tree.heading(col, text=label + "\n(" + col + ")")
+            self._delete_tree.column(col, width=col_widths.get(col, 100),
+                                     anchor="center", minwidth=60)
+
+        vsb = ttk.Scrollbar(tree_container, orient="vertical", command=self._delete_tree.yview)
+        hsb = ttk.Scrollbar(tree_container, orient="horizontal", command=self._delete_tree.xview)
+        self._delete_tree.configure(yscrollcommand=vsb.set, xscrollcommand=hsb.set)
+
+        self._delete_tree.grid(row=0, column=0, sticky="nsew")
+        vsb.grid(row=0, column=1, sticky="ns")
+        hsb.grid(row=1, column=0, sticky="ew")
+        tree_container.grid_rowconfigure(0, weight=1)
+        tree_container.grid_columnconfigure(0, weight=1)
+
+        self._delete_tree.bind("<Double-1>", self._delete_on_double_click)
+
+        # 操作按钮
+        action_frame = tk.Frame(table_card, bg='#ffffff')
+        action_frame.pack(fill="x", padx=20, pady=(0, 15))
+
+        tk.Button(
+            action_frame, text="删除选中记录",
+            font=('Microsoft YaHei UI', 10), bg='#ff4d4f', fg='#ffffff',
+            bd=0, padx=16, pady=5, cursor='hand2',
+            command=self._delete_record_from_tree
+        ).pack(side="left", padx=3)
+        tk.Button(
+            action_frame, text="刷新",
+            font=('Microsoft YaHei UI', 10), bg='#f5f5f5', fg='#595959',
+            bd=0, padx=16, pady=5, cursor='hand2',
+            command=self._delete_do_search
+        ).pack(side="left", padx=3)
+
+    def _delete_do_search(self):
+        keyword = self._delete_search_var.get().strip()
+        if not keyword:
+            self._delete_load_all()
+            return
+        if not self.db_connected or not self.conn:
+            messagebox.showwarning("未连接", "数据库未连接")
+            return
+        conn = self._get_connection()
+        try:
+            cols = "INVOICECODE, NN, CONCODE, DRIVER, SIZE, DRIVERCODE, TAKENO, DRIVERCOMM"
+            sql = f"SELECT {cols} FROM CON_DETAIL WHERE INVOICECODE LIKE %s ORDER BY INVOICECODE"
+            with conn.cursor(pymysql.cursors.DictCursor) as cur:
+                cur.execute(sql, ("%" + keyword + "%",))
+                rows = cur.fetchall()
+            self._delete_populate_tree(rows)
+            self._delete_count_label.config(text=f"共 {len(rows)} 条记录")
+        except Exception as e:
+            messagebox.showerror("搜索失败", str(e))
+
+    def _delete_load_all(self):
+        if not self.db_connected or not self.conn:
+            messagebox.showwarning("未连接", "数据库未连接")
+            return
+        conn = self._get_connection()
+        try:
+            cols = "INVOICECODE, NN, CONCODE, DRIVER, SIZE, DRIVERCODE, TAKENO, DRIVERCOMM"
+            sql = f"SELECT {cols} FROM CON_DETAIL ORDER BY INVOICECODE LIMIT 500"
+            with conn.cursor(pymysql.cursors.DictCursor) as cur:
+                cur.execute(sql)
+                rows = cur.fetchall()
+            self._delete_populate_tree(rows)
+            self._delete_count_label.config(text=f"共 {len(rows)} 条记录")
+        except Exception as e:
+            messagebox.showerror("加载失败", str(e))
+
+    def _delete_clear(self):
+        self._delete_search_var.set("")
+        for item in self._delete_tree.get_children():
+            self._delete_tree.delete(item)
+        self._delete_count_label.config(text="共 0 条记录")
+
+    def _delete_populate_tree(self, rows):
+        tree = self._delete_tree
+        for item in tree.get_children():
+            tree.delete(item)
+        for row in rows:
+            tree.insert("", "end", values=(
+                row.get("INVOICECODE", ""),
+                row.get("NN", ""),
+                row.get("CONCODE", ""),
+                row.get("DRIVER", ""),
+                row.get("SIZE", ""),
+                row.get("DRIVERCODE", ""),
+                row.get("TAKENO", ""),
+                row.get("DRIVERCOMM", ""),
+            ))
+
+    def _delete_record_from_tree(self):
+        tree = self._delete_tree
+        selected = tree.selection()
+        if not selected:
+            messagebox.showwarning("提示", "请先选中一条记录")
+            return
+        values = tree.item(selected[0], "values")
+        nn_val = values[1]
+        try:
+            nn = int(nn_val)
+        except (ValueError, TypeError):
+            nn = 0
+        if nn < 2:
+            messagebox.showwarning("提示", f"只能删除 NN >= 2 的记录，当前 NN={nn}")
+            return
+
+        invoice_code = values[0]
+        con_code = values[2]
+        dialog = DeleteConfirmDialog(self.root, invoice_code, con_code)
+        self.root.wait_window(dialog)
+        if not dialog.result:
+            return
+
+        if not self.db_connected or not self.conn:
+            messagebox.showwarning("未连接", "数据库未连接")
+            return
+        conn = self._get_connection()
+        try:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "DELETE FROM CON_DETAIL WHERE INVOICECODE = %s AND CONCODE = %s AND NN >= 2",
+                    (invoice_code, con_code)
+                )
+                affected = cur.rowcount
+                conn.commit()
+            messagebox.showinfo("删除成功", f"已删除 {affected} 条记录\n發票號: {invoice_code}\n櫃號: {con_code}")
+            self._delete_do_search()
+        except Exception as e:
+            conn.rollback()
+            messagebox.showerror("删除失败", str(e))
+
+    def _delete_on_double_click(self, event):
+        tree = self._delete_tree
+        selected = tree.selection()
+        if not selected:
+            return
+        values = tree.item(selected[0], "values")
+        cols = tree["columns"]
+        info_lines = [f"{col}: {values[i]}" for i, col in enumerate(cols)]
+        messagebox.showinfo("记录详情", "\n".join(info_lines))
+
+    # ── 增加司机 ──────────────────────────────────────
+
+    def show_add_driver(self):
+        """显示增加司机页面 —— 写入 DRIVER_MASTER / VEHICLE_MASTER / DRIVER_CP"""
+        page = tk.Frame(self.main_content, bg='#f0f2f5')
+        page.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
+
+        self._add_driver_edit_code = None
+
+        # ── 页面标题 ──────────────────────────────────
+        title_frame = tk.Frame(page, bg='#f0f2f5')
+        title_frame.pack(fill=tk.X, pady=(0, 20))
+
+        tk.Label(
+            title_frame,
+            text="增加司机",
+            font=('Microsoft YaHei UI', 20, 'bold'),
+            bg='#f0f2f5',
+            fg='#262626'
+        ).pack(side=tk.LEFT)
+
+        # ── 表单卡片 ──────────────────────────────────
+        form_card = tk.Frame(page, bg='#ffffff', bd=1, relief='solid')
+        form_card.pack(fill=tk.X, ipady=10)
+
+        card_header = tk.Frame(form_card, bg='#ffffff', padx=20, pady=15)
+        card_header.pack(fill=tk.X)
+
+        self._add_driver_mode = tk.Label(
+            card_header, text="📝 新增司机",
+            font=('Microsoft YaHei UI', 14, 'bold'),
+            bg='#ffffff', fg='#1890ff'
+        )
+        self._add_driver_mode.pack(side=tk.LEFT)
+
+        form_body = tk.Frame(form_card, bg='#ffffff', padx=20)
+        form_body.pack(fill=tk.X)
+
+        fields = [
+            ("司機編號", "driver_code", 20),
+            ("司機姓名", "driver_name", 20),
+            ("香港車牌", "hk_plate", 20),
+            ("大陸車牌", "sz_plate", 20),
+        ]
+        self._add_driver_entries = {}
+        for i, (label, key, width) in enumerate(fields):
+            row = tk.Frame(form_body, bg='#ffffff')
+            row.pack(fill=tk.X, pady=6)
+            tk.Label(row, text=label + "：", font=('Microsoft YaHei UI', 11),
+                     bg='#ffffff', fg='#595959', width=10, anchor='e'
+                     ).pack(side=tk.LEFT, padx=(0, 10))
+            entry = tk.Entry(row, font=('Microsoft YaHei UI', 11), width=width)
+            entry.pack(side=tk.LEFT)
+            self._add_driver_entries[key] = entry
+
+        tk.Label(form_body, text="提交后同时写入 DRIVER_MASTER / VEHICLE_MASTER / DRIVER_CP 三张表",
+                 font=('Microsoft YaHei UI', 9), bg='#ffffff', fg='#8c8c8c'
+                 ).pack(anchor="w", pady=(10, 0))
+
+        btn_frame = tk.Frame(form_card, bg='#ffffff', padx=20)
+        btn_frame.pack(fill=tk.X)
+
+        tk.Button(
+            btn_frame, text="提交", font=('Microsoft YaHei UI', 11),
+            bg='#1890ff', fg='#ffffff', bd=0, padx=30, pady=6, cursor='hand2',
+            command=self._add_driver_submit
+        ).pack(side=tk.LEFT, padx=(0, 10))
+
+        tk.Button(
+            btn_frame, text="清空", font=('Microsoft YaHei UI', 11),
+            bg='#f5f5f5', fg='#595959', bd=0, padx=20, pady=6, cursor='hand2',
+            command=self._add_driver_clear
+        ).pack(side=tk.LEFT, padx=(0, 10))
+
+        tk.Button(
+            btn_frame, text="取消编辑", font=('Microsoft YaHei UI', 11),
+            bg='#f5f5f5', fg='#595959', bd=0, padx=20, pady=6, cursor='hand2',
+            command=self._add_driver_cancel_edit
+        ).pack(side=tk.LEFT, padx=(0, 10))
+
+        tk.Button(
+            btn_frame, text="删除司机", font=('Microsoft YaHei UI', 11),
+            bg='#ff4d4f', fg='#ffffff', bd=0, padx=20, pady=6, cursor='hand2',
+            command=self._add_driver_delete
+        ).pack(side=tk.LEFT)
+
+        # ── 结果提示区域 ──────────────────────────────────
+        self._add_driver_result = tk.Label(
+            page, text="", font=('Microsoft YaHei UI', 11),
+            bg='#f0f2f5', fg='#262626'
+        )
+        self._add_driver_result.pack(pady=(15, 0))
+
+        # ── 司机列表卡片 ──────────────────────────────────
+        list_card = tk.Frame(page, bg='#ffffff', bd=1, relief='solid')
+        list_card.pack(fill=tk.BOTH, expand=True, pady=(15, 0), ipady=10)
+
+        list_header = tk.Frame(list_card, bg='#ffffff', padx=20, pady=15)
+        list_header.pack(fill=tk.X)
+
+        tk.Label(list_header, text="📋 司机信息列表（点击行可编辑）",
+                 font=('Microsoft YaHei UI', 14, 'bold'),
+                 bg='#ffffff', fg='#262626').pack(side=tk.LEFT)
+
+        self._add_driver_list_count = tk.Label(
+            list_header, text="共 0 条",
+            font=('Microsoft YaHei UI', 11), bg='#ffffff', fg='#8c8c8c'
+        )
+        self._add_driver_list_count.pack(side=tk.RIGHT)
+
+        list_container = tk.Frame(list_card, bg='#ffffff')
+        list_container.pack(fill=tk.BOTH, expand=True, padx=20, pady=(0, 10))
+
+        list_cols = ("CUSTCODE", "NAME", "HKCP", "SZCP")
+        list_labels = {"CUSTCODE": "司機編號", "NAME": "司機姓名", "HKCP": "香港車牌", "SZCP": "大陸車牌"}
+        list_widths = {"CUSTCODE": 120, "NAME": 120, "HKCP": 120, "SZCP": 120}
+
+        self._add_driver_tree = ttk.Treeview(
+            list_container, columns=list_cols, show="headings",
+            selectmode="browse", height=8
+        )
+        for col in list_cols:
+            self._add_driver_tree.heading(col, text=list_labels[col])
+            self._add_driver_tree.column(col, width=list_widths[col], anchor="center", minwidth=80)
+
+        vsb = ttk.Scrollbar(list_container, orient="vertical", command=self._add_driver_tree.yview)
+        self._add_driver_tree.configure(yscrollcommand=vsb.set)
+
+        self._add_driver_tree.grid(row=0, column=0, sticky="nsew")
+        vsb.grid(row=0, column=1, sticky="ns")
+        list_container.grid_rowconfigure(0, weight=1)
+        list_container.grid_columnconfigure(0, weight=1)
+
+        self._add_driver_tree.bind("<ButtonRelease-1>", self._add_driver_on_select)
+
+        # 加载列表
+        self._add_driver_load_list()
+
+    def _add_driver_clear(self):
+        for entry in self._add_driver_entries.values():
+            entry.delete(0, tk.END)
+        self._add_driver_result.config(text="", fg='#262626')
+        self._add_driver_mode.config(text="📝 新增司机", fg='#1890ff')
+        self._add_driver_edit_code = None
+
+    def _add_driver_submit(self):
+        driver_code = self._add_driver_entries["driver_code"].get().strip()
+        driver_name = self._add_driver_entries["driver_name"].get().strip()
+        hk_plate = self._add_driver_entries["hk_plate"].get().strip()
+        sz_plate = self._add_driver_entries["sz_plate"].get().strip()
+
+        if not driver_code:
+            messagebox.showwarning("提示", "请输入司機編號")
+            return
+        if not driver_name:
+            messagebox.showwarning("提示", "请输入司機姓名")
+            return
+        if not hk_plate:
+            messagebox.showwarning("提示", "请输入香港車牌")
+            return
+
+        if not self.db_connected or not self.conn:
+            messagebox.showwarning("未连接", "数据库未连接")
+            return
+
+        conn = self._get_connection()
+        try:
+            # 新增模式：检查司機編號是否重复
+            if not getattr(self, '_add_driver_edit_code', None):
+                with conn.cursor(pymysql.cursors.DictCursor) as cur:
+                    cur.execute("SELECT CUSTCODE, NAME, HKCP, SZCP FROM DRIVER_CP WHERE CUSTCODE = %s", (driver_code,))
+                    existing = cur.fetchone()
+                if existing:
+                    self._add_driver_entries["driver_code"].delete(0, tk.END)
+                    self._add_driver_entries["driver_code"].insert(0, existing.get("CUSTCODE", ""))
+                    self._add_driver_entries["driver_name"].delete(0, tk.END)
+                    self._add_driver_entries["driver_name"].insert(0, existing.get("NAME", ""))
+                    self._add_driver_entries["hk_plate"].delete(0, tk.END)
+                    self._add_driver_entries["hk_plate"].insert(0, existing.get("HKCP", ""))
+                    self._add_driver_entries["sz_plate"].delete(0, tk.END)
+                    self._add_driver_entries["sz_plate"].insert(0, existing.get("SZCP", "") or "")
+                    self._add_driver_mode.config(text="✏️ 编辑司机", fg='#fa8c16')
+                    self._add_driver_edit_code = driver_code
+                    self._add_driver_result.config(
+                        text="⚠ 司機編號 " + driver_code + " 已存在，已加载其信息，请修改后提交",
+                        fg='#fa8c16'
+                    )
+                    return
+
+            # 香港車牌去重：检查是否与其他司机重复，重复则追加 *
+            edit_code = getattr(self, '_add_driver_edit_code', None)
+            with conn.cursor(pymysql.cursors.DictCursor) as cur:
+                while True:
+                    if edit_code:
+                        cur.execute(
+                            "SELECT HKCP FROM DRIVER_CP WHERE HKCP = %s AND CUSTCODE != %s",
+                            (hk_plate, edit_code)
+                        )
+                    else:
+                        cur.execute("SELECT HKCP FROM DRIVER_CP WHERE HKCP = %s", (hk_plate,))
+                    if not cur.fetchone():
+                        break
+                    hk_plate = hk_plate + "*"
+            self._add_driver_entries["hk_plate"].delete(0, tk.END)
+            self._add_driver_entries["hk_plate"].insert(0, hk_plate)
+
+            # 事务写入三表
+            sql1 = "INSERT INTO DRIVER_MASTER (DRIVERCODE, NAME) VALUES (%s, %s) ON DUPLICATE KEY UPDATE NAME = VALUES(NAME)"
+            sql2 = "INSERT INTO VEHICLE_MASTER (VEHICLECODE, DRIVER) VALUES (%s, %s) ON DUPLICATE KEY UPDATE DRIVER = VALUES(DRIVER)"
+            sql3 = "INSERT INTO DRIVER_CP (CUSTCODE, NAME, HKCP, SZCP) VALUES (%s, %s, %s, %s) ON DUPLICATE KEY UPDATE NAME = VALUES(NAME), HKCP = VALUES(HKCP), SZCP = VALUES(SZCP)"
+
+            with conn.cursor() as cur:
+                cur.execute(sql1, (driver_code, driver_name))
+                cur.execute(sql2, (hk_plate, driver_code))
+                cur.execute(sql3, (driver_code, driver_name, hk_plate, sz_plate))
+                conn.commit()
+
+            self._add_driver_result.config(
+                text="✅ 司机 " + driver_name + "（" + driver_code + "）" + ("更新成功" if getattr(self, '_add_driver_edit_code', None) else "添加成功"),
+                fg='#52c41a'
+            )
+            self._add_driver_clear()
+            self._add_driver_load_list()
+        except Exception as e:
+            conn.rollback()
+            self._add_driver_result.config(
+                text="❌ " + ("更新" if getattr(self, '_add_driver_edit_code', None) else "添加") + "失败: " + str(e),
+                fg='#ff4d4f'
+            )
+
+    def _add_driver_load_list(self):
+        """加载司机列表"""
+        if not self.db_connected or not self.conn:
+            return
+        conn = self._get_connection()
+        try:
+            sql = "SELECT CUSTCODE, NAME, HKCP, SZCP FROM DRIVER_CP ORDER BY CUSTCODE"
+            with conn.cursor(pymysql.cursors.DictCursor) as cur:
+                cur.execute(sql)
+                rows = cur.fetchall()
+            tree = self._add_driver_tree
+            for item in tree.get_children():
+                tree.delete(item)
+            for row in rows:
+                tree.insert("", "end", values=(
+                    row.get("CUSTCODE", ""),
+                    row.get("NAME", ""),
+                    row.get("HKCP", ""),
+                    row.get("SZCP", ""),
+                ))
+            self._add_driver_list_count.config(text="共 " + str(len(rows)) + " 条")
+        except Exception as e:
+            self._add_driver_list_count.config(text="加载失败")
+
+    def _add_driver_on_select(self, event):
+        """点击列表行 → 填入表单进入编辑模式"""
+        tree = self._add_driver_tree
+        selected = tree.selection()
+        if not selected:
+            return
+        values = tree.item(selected[0], "values")
+        self._add_driver_entries["driver_code"].delete(0, tk.END)
+        self._add_driver_entries["driver_code"].insert(0, values[0])
+        self._add_driver_entries["driver_name"].delete(0, tk.END)
+        self._add_driver_entries["driver_name"].insert(0, values[1])
+        self._add_driver_entries["hk_plate"].delete(0, tk.END)
+        self._add_driver_entries["hk_plate"].insert(0, values[2])
+        self._add_driver_entries["sz_plate"].delete(0, tk.END)
+        self._add_driver_entries["sz_plate"].insert(0, values[3] if values[3] else "")
+        self._add_driver_mode.config(text="✏️ 编辑司机", fg='#fa8c16')
+        self._add_driver_edit_code = values[0]
+        self._add_driver_result.config(text="", fg='#262626')
+
+    def _add_driver_cancel_edit(self):
+        """取消编辑，回到新增模式"""
+        self._add_driver_clear()
+        self._add_driver_tree.selection_remove(self._add_driver_tree.selection())
+
+    def _add_driver_delete(self):
+        """删除司机 —— 需要输入司機編號确认，删除三表记录"""
+        driver_code = self._add_driver_entries["driver_code"].get().strip()
+        if not driver_code:
+            messagebox.showwarning("提示", "请先在表单中输入要删除的司機編號，或从列表中点击选择")
+            return
+
+        dialog = DriverDeleteConfirmDialog(self.root, driver_code)
+        self.root.wait_window(dialog)
+        if not dialog.result:
+            return
+
+        if not self.db_connected or not self.conn:
+            messagebox.showwarning("未连接", "数据库未连接")
+            return
+
+        conn = self._get_connection()
+        try:
+            with conn.cursor() as cur:
+                cur.execute("DELETE FROM DRIVER_MASTER WHERE DRIVERCODE = %s", (driver_code,))
+                cur.execute("DELETE FROM VEHICLE_MASTER WHERE DRIVER = %s", (driver_code,))
+                cur.execute("DELETE FROM DRIVER_CP WHERE CUSTCODE = %s", (driver_code,))
+                conn.commit()
+
+            self._add_driver_result.config(
+                text="✅ 司机 " + driver_code + " 已从三表中删除",
+                fg='#52c41a'
+            )
+            self._add_driver_clear()
+            self._add_driver_load_list()
+        except Exception as e:
+            conn.rollback()
+            self._add_driver_result.config(
+                text="❌ 删除失败: " + str(e),
+                fg='#ff4d4f'
+            )
 
     def close(self):
         """关闭程序"""

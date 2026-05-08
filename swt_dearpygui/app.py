@@ -122,6 +122,8 @@ class SWTApp:
             ("customer_mgmt", "客户管理"),
             ("driver_mgmt", "司机管理"),
             ("custom_table", "自定义表格"),
+            ("delete_data", "删除数据"),
+            ("add_driver", "增加司机"),
         ])
         self._sidebar.add_category("统计", [
             ("company_stats", "公司统计"),
